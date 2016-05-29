@@ -1,4 +1,4 @@
-#!/home/aws_project/boto_env/bin/python
+#!/home/aws_project/CP-Final-Project/boto_env/bin/python
 
 # $Id: rst2s5.py 4564 2006-05-21 20:44:42Z wiemann $
 # Author: Chris Liechti <cliechti@gmx.net>

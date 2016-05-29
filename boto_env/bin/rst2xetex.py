@@ -1,4 +1,4 @@
-#!/home/aws_project/boto_env/bin/python
+#!/home/aws_project/CP-Final-Project/boto_env/bin/python
 
 # $Id: rst2xetex.py 7038 2011-05-19 09:12:02Z milde $
 # Author: Guenter Milde

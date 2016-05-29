@@ -1,4 +1,4 @@
-#!/home/aws_project/boto_env/bin/python
+#!/home/aws_project/CP-Final-Project/boto_env/bin/python
 
 # Author: 
 # Contact: grubert@users.sf.net
