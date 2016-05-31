@@ -17,9 +17,9 @@ def get_temperature_and_humidity(location):
     elements = location.findall('d:weatherElement', ns)
     for element in elements:
         name = element.find('d:elementName', ns).text
-        if name == '平均溫度'.decode('utf-8'):
+        if name == '平均溫度':
             temperature = element.find('d:elementValue', ns).find('d:value', ns).text
-        if name == '平均相對濕度'.decode('utf-8'):
+        if name == '平均相對濕度':
             humidity = element.find('d:elementValue', ns).find('d:value', ns).text
     return temperature, humidity
 
@@ -90,26 +90,26 @@ for year in range(2012, 2016, 1):
         locations = month.findall('d:location', ns)
         for location in locations:
             name = location.find('d:locationName', ns).text
-            #if name == 'XINWU,新屋'.decode('utf-8'):
+            #if name == 'XINWU,新屋':
                 #get_temperature_and_humidity(location, date, 'TAOYUAN')
-            if name == 'YILAN,宜蘭'.decode('utf-8'):
+            if name == 'YILAN,宜蘭':
                 temperature, humidity = get_temperature_and_humidity(location)
                 YL_data['temperature'][date] = float(temperature)
                 YL_data['humidity'][date] = float(humidity)
-            if name == 'TAICHUNG,臺中'.decode('utf-8'):
+            if name == 'TAICHUNG,臺中':
                 temperature, humidity = get_temperature_and_humidity(location)
                 TC_data['temperature'][date] = float(temperature)
                 TC_data['humidity'][date] = float(humidity)
-            if name == 'KAOHSIUNG,高雄'.decode('utf-8'):
+            if name == 'KAOHSIUNG,高雄':
                 temperature, humidity = get_temperature_and_humidity(location)
                 KS_data['temperature'][date] = float(temperature)
                 KS_data['humidity'][date] = float(humidity)
-            if name == 'TAITUNG,臺東'.decode('utf-8'):
+            if name == 'TAITUNG,臺東':
                 temperature, humidity = get_temperature_and_humidity(location)
                 TT_data['temperature'][date] = float(temperature)
                 TT_data['humidity'][date] = float(humidity)
 
-print "Monthly Weather Data From 2012~2015 Retrieved Successfully!"
+print("Monthly Weather Data From 2012~2015 Retrieved Successfully!")
 
 for year in range(2012, 2016, 1):
     # 每日雨量-過去9年局屬地面測站每日雨量資料
@@ -119,10 +119,10 @@ for year in range(2012, 2016, 1):
     locations = root.find('d:dataset', ns).findall('d:location', ns)
     for location in locations:
     	name = location.find('d:locationName', ns).text
-    	#if name == 'XINWU,新屋'.decode('utf-8'): collect_data(location, 'TAOYUAN')
-    	if name == 'YILAN,宜蘭'.decode('utf-8'): collect_data(location, 'YILAN')
-    	if name == 'TAICHUNG,臺中'.decode('utf-8'): collect_data(location, 'TAICHUNG')
-    	if name == 'KAOHSIUNG,高雄'.decode('utf-8'): collect_data(location, 'KAOHSIUNG')
-    	if name == 'TAITUNG,臺東'.decode('utf-8'): collect_data(location, 'TAITUNG')
+    	#if name == 'XINWU,新屋': collect_data(location, 'TAOYUAN')
+    	if name == 'YILAN,宜蘭': collect_data(location, 'YILAN')
+    	if name == 'TAICHUNG,臺中': collect_data(location, 'TAICHUNG')
+    	if name == 'KAOHSIUNG,高雄': collect_data(location, 'KAOHSIUNG')
+    	if name == 'TAITUNG,臺東': collect_data(location, 'TAITUNG')
 
 

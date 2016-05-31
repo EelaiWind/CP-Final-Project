@@ -1,5 +1,5 @@
 #coding=utf-8
-from __future__ import print_function
+
 from mydynamodb.utils import add_weather_item, add_product_price_item, get_poduct_price_record
 from datetime import datetime, timedelta
 from math import sin, cos, pi

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+
 from mydynamodb.utils import add_product_price_item
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 product_code = ['LP2', 'SG5', 'LB12', 'FY7', 'S01', 'SH5', 'T1', 'R3', 'FB11', 'LD1', 'SE1', 'FT1', 'SD1',
                 'A1', '45', 'SC1', 'LA1', 'FK4', 'C1', 'FJ3', 'LH1', 'S1', 'FV1', 'B2', 'X69', 'SA32']
@@ -18,19 +18,19 @@ product_code_mapping = {'LP2':'BASIL', 'SG5':'GARLIC', 'LB12':'BOK_CHOY', 'FY7':
 def market_filter(market):
 
     flag = False
-    if market == '桃園縣'.decode('utf-8'):
+    if market == '桃園縣':
         flag = True
         market = 'TAOYUAN'
-    elif market == '宜蘭市'.decode('utf-8'):
+    elif market == '宜蘭市':
         flag = True
         market = 'YILAN'
-    elif market == '台中市'.decode('utf-8'):
+    elif market == '台中市':
         flag = True
         market = 'TAICHUNG'
-    elif market == '高雄市'.decode('utf-8'):
+    elif market == '高雄市':
         flag = True
         market = 'KAOHSIUNG'
-    elif market == '台東市'.decode('utf-8'):
+    elif market == '台東市':
         flag = True
         market = 'TAITUNG'
 
@@ -40,17 +40,17 @@ def market_filter(market):
 url = "http://m.coa.gov.tw/OpenData/FarmTransData.aspx"
 
 #type : string
-data = urllib.urlopen(url).read()
+data = urllib.request.urlopen(url).read()
 #print "Retrieved", len(data), "characters"
 
 info = json.loads(data)
 for item in info:
-    code = item['作物代號'.decode('utf-8')]
-    product = item['作物名稱'.decode('utf-8')]
-    date = item['交易日期'.decode('utf-8')]
-    region = item['市場名稱'.decode('utf-8')]
-    price = item['平均價'.decode('utf-8')]
-    turnover = item['交易量'.decode('utf-8')]
+    code = item['作物代號']
+    product = item['作物名稱']
+    date = item['交易日期']
+    region = item['市場名稱']
+    price = item['平均價']
+    turnover = item['交易量']
 
     for c in product_code:
         if c == code:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from mydynamodb.utils import add_weather_item, add_product_price_item
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xml.etree.ElementTree as ET
 
 
@@ -56,17 +56,17 @@ def collect_data(location, region):
 url = "http://m.coa.gov.tw/OpenData/FarmTransData.aspx"
 
 #type : string
-data = urllib.urlopen(url).read()
-print "Retrieved", len(data), "characters"
+data = urllib.request.urlopen(url).read()
+print("Retrieved", len(data), "characters")
 
 info = json.loads(data)
 for item in info:
-    code = item['作物代號'.decode('utf-8')]
-    product = item['作物名稱'.decode('utf-8')]
-    date = item['交易日期'.decode('utf-8')]
-    region = item['市場名稱'.decode('utf-8')]
-    price = item['平均價'.decode('utf-8')]
-    turnover = item['交易量'.decode('utf-8')]
+    code = item['作物代號']
+    product = item['作物名稱']
+    date = item['交易日期']
+    region = item['市場名稱']
+    price = item['平均價']
+    turnover = item['交易量']
 
     for c in product_code:
         if c == code:
@@ -92,15 +92,15 @@ for item in info:
 url = 'http://opendata.cwb.gov.tw/opendataapi?dataid=O-A0001-001&authorizationkey=CWB-9A63F68D-76D1-4678-9514-8C5D82B7283B'
 ns = {'d': 'urn:cwb:gov:tw:cwbcommon:0.1'}
 
-root = ET.parse(urllib.urlopen(url)).getroot()
+root = ET.parse(urllib.request.urlopen(url)).getroot()
 
 locations = root.findall('d:location', ns)
 
 for location in locations:
 	name = location.find('d:locationName', ns).text
-	#if name == '桃園'.decode('utf-8'): collect_data(location, 'TAOYUAN')
-	if name == '礁溪'.decode('utf-8'): collect_data(location, 'YILAN')
-	if name == '大甲'.decode('utf-8'): collect_data(location, 'TAICHUNG')
-	if name == '新興'.decode('utf-8'): collect_data(location, 'KAOHSIUNG')
-	if name == '池上'.decode('utf-8'): collect_data(location, 'TAITUNG')
+	#if name == '桃園': collect_data(location, 'TAOYUAN')
+	if name == '礁溪': collect_data(location, 'YILAN')
+	if name == '大甲': collect_data(location, 'TAICHUNG')
+	if name == '新興': collect_data(location, 'KAOHSIUNG')
+	if name == '池上': collect_data(location, 'TAITUNG')
 
