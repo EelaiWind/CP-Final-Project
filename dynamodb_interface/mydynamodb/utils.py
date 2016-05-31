@@ -43,7 +43,18 @@ def add_product_price_item(product, date, trading_datas, overwrite = True):
     check_date(date)
     check_product(product)
 
-    trading_datas_list={}
+    response = product_price_table.get_item(
+        Key={
+            key_product: product,
+            key_date: date
+        }
+    )
+
+    if 'Item' in response and key_trading_data in response['Item']:
+        trading_datas_context = response['Item'][key_trading_data]
+    else:
+        trading_datas_context = {}
+
     for trading_data in trading_datas:
         region = trading_data[key_region]
         price = Decimal(str(trading_data[key_price]))
@@ -53,7 +64,7 @@ def add_product_price_item(product, date, trading_datas, overwrite = True):
         check_price(price)
         check_turnover(turnover)
 
-        trading_datas_list[get_region_key(region)] = {
+        trading_datas_context[get_region_key(region)] = {
             key_price:price,
             key_turnover:turnover,
         }
@@ -61,7 +72,7 @@ def add_product_price_item(product, date, trading_datas, overwrite = True):
     item_context = {
         key_product:product,
         key_date: date,
-        key_trading_data: trading_datas_list
+        key_trading_data: trading_datas_context
     }
 
     if overwrite:

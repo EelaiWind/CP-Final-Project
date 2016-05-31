@@ -69,5 +69,5 @@ GRAPE =         'GRAPE'
 CHILI =         'CHILI'
 PINEAPPLE =     'PINEAPPLE'
 APPLE =         'APPLE'
-RADISH =        'GRAPE'
+RADISH =        'RADISH'
 

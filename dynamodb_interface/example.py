@@ -1,6 +1,7 @@
 #coding=utf-8
 from __future__ import print_function
 from mydynamodb.utils import add_weather_item, add_product_price_item, get_poduct_price_record
+from mydynamodb.attribute_checker import valid_products, valid_regions
 
 # Add Product Price Example
 product = 'SPINACH'
@@ -32,6 +33,7 @@ trading_datas = [
         'turnover': 2E2
     }
 ]
+'''
 add_product_price_item(product, date, trading_datas)
 
 # Add Weather Record Example
@@ -57,3 +59,10 @@ print(data['region'])
 print(data['starting_date'])    # will be an empty string if the list of price is empty
 print(data['ending_date'])      # will be an empty string if the list of price is empty
 print(data['price'])            # list of price
+'''
+for product in valid_products:
+    for region in valid_regions:
+        data = get_poduct_price_record(product, region)
+        print('{} @ {}'.format(data['product'],data['region']))
+        print('{} ~ {}'.format(data['starting_date'],data['ending_date']))
+        print(data['price'])            # list of price

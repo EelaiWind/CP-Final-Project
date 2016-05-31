@@ -1,2 +1,8 @@
 *.py[cod]
 boto_env/*
+py3_boto_env/*
+dynamodb_interface/veggg/
+dynamodb_interface/C-B0025-002/
+dynamodb_interface/C-B0026-002/
+*.log
+*.txt
