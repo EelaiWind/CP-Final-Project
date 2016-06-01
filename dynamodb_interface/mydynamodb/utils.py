@@ -1,11 +1,13 @@
  # Python 2/3 compatibility
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from .chinese_name import *
 from .attribute_checker import *
 from .attribute_key import *
 from .setting import weather_table, product_price_table
+
+__one_day_timedelta = timedelta(1)
 
 def add_weather_item(region, date, temperature, rainfall, humidity, overwrite = True):
     temperature =  Decimal(str(temperature))
@@ -98,10 +100,19 @@ def get_poduct_price_record(product, region, delta_starting_days=-90):
         ExpressionAttributeNames={'#d' : key_date },
         KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).gte(get_starting_date(delta_starting_days))
     )
-    return parse_product_prict_query_output(response['Items'], product, region)
+
+    items = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = product_price_table.query(
+            ProjectionExpression='product, #d, trading_data.{}.price'.format(get_region_key(region)),
+            ExpressionAttributeNames={'#d' : key_date },
+            KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).gte(get_starting_date(delta_starting_days)),
+            ExclusiveStartKey=response['LastEvaluatedKey']
+        )
+        items += response['Items']
+    return parse_product_prict_query_output(items, product, region)
 
 def parse_product_prict_query_output(responseItem, product, region):
-    __one_day_timedelta = timedelta(1)
     starting_date = ''
     previous_date = None
     if len(responseItem) > 0:
@@ -129,7 +140,7 @@ def parse_product_prict_query_output(responseItem, product, region):
                 previous_date = parse_string_to_date(starting_date)
             else:
                 previous_date += __one_day_timedelta
-            price.append(float(data[key_trading_data][region_key][key_price]))
+            price.append(data[key_trading_data][region_key][key_price])
 
     return {
         'product':product,
@@ -139,8 +150,11 @@ def parse_product_prict_query_output(responseItem, product, region):
         'price':price,
     }
 
-def parse_string_to_date(date_string):
-    return datetime.strptime(date_string, '%Y-%m-%d').date()
+def parse_string_to_date(date_input):
+    if type(date_input) is date:
+        return date
+    else:
+        return datetime.strptime(date_input, '%Y-%m-%d').date()
 
 def get_region_key(region):
     if not region in valid_regions:
@@ -158,3 +172,243 @@ def get_region_key(region):
 
 def get_starting_date(delta_days):
     return str(datetime.now().date() + timedelta(delta_days))
+
+def retieve_training_data(product, region, starting_date='2007-01-01', ending_date=datetime.now().date(), weather_history_size=31, trading_data_hostory_size=5):
+    check_date(starting_date)
+    check_date(ending_date)
+    ending_date = parse_string_to_date(ending_date)
+    starting_date = parse_string_to_date(starting_date)
+    now_date = starting_date + (max(weather_history_size, trading_data_hostory_size)-1)*__one_day_timedelta
+
+    ground_truth = retrieve_ground_truth(product, region, now_date, ending_date);
+
+    training_datas = []
+    index = 0
+    while now_date <= ending_date:
+        print(now_date)
+        row_data = { 'month': now_date.month, 'date': now_date, 'ground_truth':ground_truth[index] }
+        index += 1
+        # weather data include today's data
+        weather_data = get_batch_weather(region, now_date-(weather_history_size-1)*__one_day_timedelta, now_date)
+        # tading data does NOT include today's data, the latest one is yesterdays
+        trading_data = get_batch_trading_data(product, region, now_date-(trading_data_hostory_size)*__one_day_timedelta, now_date-__one_day_timedelta)
+        row_data = { **row_data, **weather_data, **trading_data }
+        training_datas.append(row_data)
+        now_date += __one_day_timedelta
+
+    return training_datas
+
+def retrieve_ground_truth(product, region, starting_date, ending_date):
+    check_product(product)
+    check_region(region)
+
+    starting_date = str(starting_date)
+    ending_date = str(ending_date)
+
+    if starting_date > ending_date:
+        return []
+
+    regin_shortcut = get_region_key(region)
+    response = product_price_table.query(
+        ProjectionExpression='#d, trading_data.{}.price'.format(regin_shortcut),
+        ExpressionAttributeNames={'#d' : key_date },
+        KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).between(starting_date, ending_date)
+    )
+
+    items = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = product_price_table.query(
+            ProjectionExpression='#d, trading_data.{}.price'.format(regin_shortcut),
+            ExpressionAttributeNames={'#d' : key_date },
+            KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).between(starting_date, ending_date),
+            ExclusiveStartKey=response['LastEvaluatedKey']
+        )
+        items += response['Items']
+
+    origin_data = []
+    for data in items:
+        if key_trading_data in data:
+            origin_data.append({
+                key_date: data[key_date],
+                key_price: data[key_trading_data][regin_shortcut][key_price]
+            })
+
+    return fix_missing_data(origin_data, [key_price], starting_date, ending_date)[key_price]
+
+def get_batch_weather(region, starting_date, ending_date):
+    starting_date = str(starting_date)
+    ending_date = str(ending_date)
+    check_region(region)
+    check_date(starting_date)
+    check_date(ending_date)
+
+    response = weather_table.query(
+        ProjectionExpression='#d, {}, {}, {}'.format(key_temperature, key_rainfall, key_humidity),
+        ExpressionAttributeNames = {'#d':'date'},
+        KeyConditionExpression=Key(key_region).eq(region) & Key(key_date).between(starting_date, ending_date)
+    )
+    items = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = weather_table.query(
+            ProjectionExpression='#d, {}, {}, {}'.format(key_temperature, key_rainfall, key_humidity),
+            ExpressionAttributeNames = {'#d':'date'},
+            KeyConditionExpression=Key(key_region).eq(region) & Key(key_date).between(starting_date, ending_date),
+            ExclusiveStartKey=response['LastEvaluatedKey']
+        )
+        items += response['Items']
+
+    origin_data = []
+    for data in items:
+        origin_data.append({
+            key_date:data[key_date],
+            key_temperature:data[key_temperature],
+            key_rainfall:data[key_rainfall],
+            key_humidity:data[key_humidity]
+        })
+
+    return fix_missing_data(origin_data, [key_temperature, key_rainfall, key_humidity], starting_date, ending_date)
+
+def get_batch_trading_data(product, region, starting_date, ending_date):
+    starting_date = str(starting_date)
+    ending_date = str(ending_date)
+    check_product(product)
+    check_region(region)
+    check_date(starting_date)
+    check_date(ending_date)
+
+    region_shortcut = get_region_key(region)
+    response = product_price_table.query(
+        ProjectionExpression='#d, trading_data.{}'.format(region_shortcut),
+        ExpressionAttributeNames = { '#d' : 'date' },
+        KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).between(starting_date, ending_date)
+    )
+    items = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = product_price_table.query(
+            ProjectionExpression='#d, trading_data.{}'.format(region_shortcut),
+            ExpressionAttributeNames = { '#d' : 'date' },
+            KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).between(starting_date, ending_date),
+            ExclusiveStartKey=response['LastEvaluatedKey']
+        )
+        items += response['Items']
+
+    if len(items) > 0:
+        origin_data = []
+        for data in items:
+            if key_trading_data in data:
+                origin_data.append({
+                    key_date:data[key_date],
+                    key_price:data[key_trading_data][region_shortcut][key_price],
+                    key_turnover:data[key_trading_data][region_shortcut][key_turnover]
+                })
+        if len(origin_data) > 0:
+            return fix_missing_data(origin_data, [key_price, key_turnover], starting_date, ending_date)
+
+    historical_month_average = get_month_history_average(product, region, ending_date)
+    elapsed_days = (parse_string_to_date(ending_date) - parse_string_to_date(starting_date)).days
+    return {
+        key_price: [historical_month_average[key_price]]*elapsed_days,
+        key_turnover: [historical_month_average[key_turnover]]*elapsed_days,
+    }
+
+def get_month_history_average(product, region, date):
+    check_product(product)
+    check_region(region)
+    check_date(date)
+    region_shortcut = get_region_key(region)
+    #ex: "-04-"
+    date_query_string = str(date)[0:8]
+    response = product_price_table.query(
+        ProjectionExpression='trading_data.{}.price, trading_data.{}.turnover'.format(region_shortcut, region_shortcut),
+        KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).begins_with(date_query_string)
+    )
+
+    items = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = product_price_table.query(
+            ProjectionExpression='trading_data.{}.price, trading_data.{}.turnover'.format(region_shortcut, region_shortcut),
+            KeyConditionExpression=Key(key_product).eq(product) & Key(key_date).begins_with(date_query_string),
+            ExclusiveStartKey=response['LastEvaluatedKey']
+        )
+        items += response['Items']
+
+    total={
+        key_price:0,
+        key_turnover:0,
+    }
+
+    count = 0
+    for data in items:
+        if key_trading_data in data:
+            total[key_price] += data[key_trading_data][region_shortcut][key_price]
+            total[key_turnover] += data[key_trading_data][region_shortcut][key_turnover]
+            count += 1
+
+    if count == 0:
+        raise Exception("trading data of {} at {} is insufficient")
+
+    return {
+        key_price: total[key_price]/count,
+        key_turnover: total[key_turnover]/count
+    }
+
+def fix_missing_data(oringin_datas, key_list, starting_date, ending_date):
+    if not key_date in oringin_datas[0]:
+        raise Exception('Fix missing data: Oringin_data must contain "date" information!')
+
+    __MISSING_VALUE = -1
+    value_sum = {}
+    value_count = {}
+    value_mean = {}
+    value_record = {}
+
+    ending_date = str(ending_date)
+    expected_date = parse_string_to_date(starting_date)
+    for key in key_list:
+        value_sum[key] = 0
+        value_count[key] = 0
+        value_record[key] = []
+
+    no_data_index = []
+    index = 0
+    for data in oringin_datas:
+        while str(expected_date) < data['date']:
+            for key in key_list:
+                value_record[key].append(__MISSING_VALUE)
+
+            no_data_index.append(index)
+            index += 1
+            expected_date += __one_day_timedelta
+
+        for key in key_list:
+            value = data[key]
+            value_sum[key] += value
+            value_count[key] += 1
+            value_record[key].append(value)
+
+        expected_date += __one_day_timedelta
+        index += 1
+
+    while str(expected_date) <= ending_date:
+        no_data_index.append(index)
+        for key in key_list:
+            value_record[key].append(__MISSING_VALUE)
+
+        index += 1
+        expected_date += __one_day_timedelta
+
+    for key in key_list:
+        if value_count[key] == 0:
+            value_mean[key] = 0
+        else:
+            value_mean[key] = value_sum[key]/value_count[key]
+
+    for i in no_data_index:
+        for key in key_list:
+            value_record[key][i] = value_mean[key]
+
+    context = {}
+    for key in key_list:
+        context[key] = value_record[key]
+    return context
+

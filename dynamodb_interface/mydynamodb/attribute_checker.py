@@ -17,7 +17,7 @@ def check_region(region):
         raise Exception('{} is not a valid "region" attribute'.format(region))
 
 def check_date(date):
-    if not date_validator.match(date):
+    if type(date) is str and not date_validator.match(date):
         raise Exception('{} is not a valid "date" attribute'.format(date))
 
 def check_rainfall(rainfall):

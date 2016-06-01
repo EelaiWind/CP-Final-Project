@@ -6,3 +6,4 @@ dynamodb_interface/C-B0025-002/
 dynamodb_interface/C-B0026-002/
 *.log
 *.txt
+*.csv
