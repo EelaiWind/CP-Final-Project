@@ -5,14 +5,14 @@ import urllib.request, urllib.parse, urllib.error
 import xml.etree.ElementTree as ET
 
 
-product_code = ['LP2', 'SG5', 'LB12', 'FY7', 'S01', 'SH5', 'T1', 'R3', 'FB11', 'LD1', 'SE1', 'FT1', 'SD1',
-                'A1', '45', 'SC1', 'LA1', 'FK4', 'C1', 'FJ3', 'LH1', 'S1', 'FV1', 'B2', 'X69', 'SA32']
+product_code = ['LP2', 'SG5', 'LB12', 'FY7', 'SO1', 'SH5', 'T1', 'R3', 'FB11', 'LD1', 'SE1', 'FT1', 'SD1',
+                'A1', '45', 'SC1', 'LA1', 'FK4', 'C1', 'FJ3', 'LH1', 'S1', 'FV1', 'B2', 'X69', 'SA32', 'SA3', 'SA31']
 
-product_code_mapping = {'LP2':'BASIL', 'SG5':'GARLIC', 'LB12':'BOK_CHOY', 'FY7':'CORN', 'S01':'SWEET_POTATO',
+product_code_mapping = {'LP2':'BASIL', 'SG5':'GARLIC', 'LB12':'BOK_CHOY', 'FY7':'CORN', 'SO1':'SWEET_POTATO',
                     'SH5':'BAMBOO_SHOOT', 'T1':'WATERMELON', 'R3':'MANGO', 'FB11':'BROCCOLI', 'LD1':'SPOON_CABBAGE',
                     'SE1':'SHALLOT', 'FT1':'PUMPKIN', 'SD1':'ONION', 'A1':'BANANA', '45':'STRAWBERRY', 'SC1':'POTATO',
                     'LA1':'CABBAGE', 'FK4':'SWEET_PEPPER', 'C1':'PONKAN', 'FJ3':'TOMATO', 'LH1':'SPINACH', 'S1':'GRAPE',
-                    'FV1':'CHILI', 'B2':'PINEAPPLE', 'X69':'APPLE', 'SA32':'RADISH'}
+                    'FV1':'CHILI', 'B2':'PINEAPPLE', 'X69':'APPLE', 'SA32':'RADISH', 'SA3':'RADISH', 'SA31','RADISH'}
 
 
 

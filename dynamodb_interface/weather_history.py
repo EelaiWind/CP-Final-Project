@@ -78,7 +78,7 @@ def collect_data(location, region):
 	add_weather_item(region, date, temperature, rainfall, humidity)
 
 
-for year in range(2012, 2016, 1):
+for year in range(2007, 2016, 1):
 
     # 每月氣象-過去9年局屬地面測站每月氣象資料
     filename = 'C-B0026-002/mn_Report_' + str(year) + '.xml'
@@ -109,9 +109,9 @@ for year in range(2012, 2016, 1):
                 TT_data['temperature'][date] = float(temperature)
                 TT_data['humidity'][date] = float(humidity)
 
-print("Monthly Weather Data From 2012~2015 Retrieved Successfully!")
+print("Monthly Weather Data From 2007~2015 Retrieved Successfully!")
 
-for year in range(2012, 2016, 1):
+for year in range(2007, 2016, 1):
     # 每日雨量-過去9年局屬地面測站每日雨量資料
     filename = 'C-B0025-002/dy_Report_' + str(year) + '.xml'
     root = ET.parse(filename).getroot()
