@@ -75,7 +75,7 @@ def collect_data(location, region):
         # 原始資料缺漏
         if rainfall == 'T': rainfall = 0
 
-	add_weather_item(region, date, temperature, rainfall, humidity)
+    add_weather_item(region, date, temperature, rainfall, humidity)
 
 
 for year in range(2007, 2016, 1):
@@ -118,11 +118,11 @@ for year in range(2007, 2016, 1):
 
     locations = root.find('d:dataset', ns).findall('d:location', ns)
     for location in locations:
-    	name = location.find('d:locationName', ns).text
-    	#if name == 'XINWU,新屋': collect_data(location, 'TAOYUAN')
-    	if name == 'YILAN,宜蘭': collect_data(location, 'YILAN')
-    	if name == 'TAICHUNG,臺中': collect_data(location, 'TAICHUNG')
-    	if name == 'KAOHSIUNG,高雄': collect_data(location, 'KAOHSIUNG')
-    	if name == 'TAITUNG,臺東': collect_data(location, 'TAITUNG')
+        name = location.find('d:locationName', ns).text
+        #if name == 'XINWU,新屋': collect_data(location, 'TAOYUAN')
+        if name == 'YILAN,宜蘭': collect_data(location, 'YILAN')
+        if name == 'TAICHUNG,臺中': collect_data(location, 'TAICHUNG')
+        if name == 'KAOHSIUNG,高雄': collect_data(location, 'KAOHSIUNG')
+        if name == 'TAITUNG,臺東': collect_data(location, 'TAITUNG')
 
 

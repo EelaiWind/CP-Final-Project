@@ -20,13 +20,17 @@ def check_date(date):
     if type(date) is str and not date_validator.match(date):
         raise Exception('{} is not a valid "date" attribute'.format(date))
 
+def check_temperature(temperature):
+    if not temperature >= 0:
+        raise Exception('value of "temperature" attribute must >= 0 ({})'.format(temperature))
+
 def check_rainfall(rainfall):
     if not rainfall >= 0:
-        raise Exception('value of "rainfall" attribute must >= 0')
+        raise Exception('value of "rainfall" attribute must >= 0 ({})'.format(rainfall))
 
 def check_humidity(humidity):
     if not (humidity >= 0 and humidity <= 100):
-        raise Exception('value of "humidity" attribute must >= 0 and <= 100')
+        raise Exception('value of "humidity" attribute must >= 0 and <= 100 ({})'.format(humidity))
 
 def check_product(product):
     if not product in valid_products:
@@ -34,8 +38,8 @@ def check_product(product):
 
 def check_price(price):
     if not price >= 0:
-        raise Exception('value of "price" attribute must >= 0')
+        raise Exception('value of "price" attribute must >= 0 ({})'.format(price))
 
 def check_turnover(turnover):
     if not turnover >= 0:
-        raise Exception('value of "turnover" attribute must >= 0')
+        raise Exception('value of "turnover" attribute must >= 0 ({})'.format(turnover))
