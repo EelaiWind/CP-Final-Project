@@ -3,6 +3,7 @@ import numpy as np
 from sklearn import datasets
 from sklearn.svm import SVR, NuSVR
 from sklearn.neighbors import KNeighborsRegressor as KNNR
+from sklearn.linear_model import Ridge
 
 def get_RMSE(y, y_predict):
     return ((y-y_predict)**2).mean()
@@ -38,6 +39,7 @@ def run_SVR(filename,svr_model):
     print()
 
 filenames = ['input_2007.csv', 'input_2007_w5.csv']
+#filenames = ['input_2007_average.csv']
 
 for filename in filenames:
     for model_type in ['SVR', 'NuSVR']:
@@ -46,15 +48,16 @@ for filename in filenames:
                 svr_model = SVR(C=error_penalty)
             elif model_type == 'NuSVR':
                 svr_model = NuSVR(C=error_penalty)
-            print('{}, error_penalty = {}, {}'.format(model_type, error_penalty, filename)
+            print('{}, error_penalty = {}, {}'.format(model_type, error_penalty, filename))
             run_SVR(filename, svr_model)
-
+'''
 for filename in filenames:
     for weight in ['uniform', 'distance']:
         for neighbors in [3,5,7]:
             knn = KNNR(neighbors, weights=weight)
             print('neighbors = {}, weight = {}'.format(neighbors, weight))
             run_SVR(filename, knn)
+'''
 
 
 

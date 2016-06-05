@@ -21,15 +21,15 @@ def add_weather_item(region, date, temperature, rainfall, humidity, overwrite = 
         key_date : date,
         key_region : region,
     }
-    if temperature:
+    if not temperature is None:
         temperature =  Decimal(str(temperature))
         check_temperature(temperature)
         item_context[key_temperature] = temperature
-    if rainfall:
+    if not rainfall is None:
         rainfall =  Decimal(str(rainfall))
         check_rainfall(rainfall)
         item_context[key_rainfall] = rainfall
-    if humidity:
+    if not humidity is None:
         humidity =  Decimal(str(humidity))
         check_humidity(humidity)
         item_context[key_humidity] = humidity
@@ -165,6 +165,33 @@ def get_batch_weather(region, starting_date, ending_date):
             origin_data.append(context)
 
         return fix_missing_data(origin_data, keys, starting_date, ending_date)
+
+def get_batch_weather_average(region, starting_date, ending_date):
+    #現在每個月只有月均資料，都記錄在每個月的第一天
+    ending_date = str(ending_date)
+    check_region(region)
+    check_date(ending_date)
+    ending_date = parse_string_to_date(ending_date) - timedelta(15)
+    date = str(ending_date)[:-2]+'01'
+    try:
+        response = weather_table.get_item(
+            Key={
+                'region': region,
+                'date': date
+            }
+        )
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+
+    data =  response['Item']
+    keys = [key_temperature, key_rainfall, key_humidity]
+    context = {}
+    for key in keys:
+        if key in data:
+            context[key] = [data[key]]
+
+    return context
+
 
 def get_batch_trading_data(product, region, starting_date, ending_date):
     starting_date = str(starting_date)
