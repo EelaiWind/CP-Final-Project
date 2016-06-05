@@ -74,8 +74,8 @@ def collect_data(location, region):
         rainfall = day.find('d:elementValue', ns).find('d:value', ns).text
         # 原始資料缺漏
         if rainfall == 'T': rainfall = 0
-
-    add_weather_item(region, date, temperature, rainfall, humidity)
+        print (date, region)
+        add_weather_item(region, date, temperature, rainfall, humidity)
 
 
 for year in range(2007, 2016, 1):
@@ -114,6 +114,7 @@ print("Monthly Weather Data From 2007~2015 Retrieved Successfully!")
 for year in range(2007, 2016, 1):
     # 每日雨量-過去9年局屬地面測站每日雨量資料
     filename = 'C-B0025-002/dy_Report_' + str(year) + '.xml'
+    print(filename)
     root = ET.parse(filename).getroot()
 
     locations = root.find('d:dataset', ns).findall('d:location', ns)

@@ -1,5 +1,6 @@
- # Python 2/3 compatibility
+# Python 2/3 compatibility
 from decimal import Decimal
+from statistics import mean
 from boto3.dynamodb.conditions import Key
 from datetime import datetime, timedelta, date
 from .chinese_name import *
@@ -90,7 +91,7 @@ def get_poduct_price_record(product, region, delta_starting_days=-90):
 
 def parse_string_to_date(date_input):
     if type(date_input) is date:
-        return date
+        return date_input
     else:
         return datetime.strptime(date_input, '%Y-%m-%d').date()
 
@@ -145,14 +146,15 @@ def get_batch_weather(region, starting_date, ending_date):
         items.append(response['Items'])
 
     origin_data = []
+    elapsed_days = parse_string_to_date(ending_date) - parse_string_to_date(starting_date)
     if len(items) == 0:
         if elapsed_days < __month_time_delta:
             # Try to get month average
             ending_date = parse_string_to_date(ending_date)
-            starting_date =  ending_date - __month_time_delta
-            return get_batch_trading_data(product, region, starting_date, ending_date)
+            data_dict =  get_batch_weather(product, region, ending_date - __month_time_delta, ending_date)
+            return use_average_as_answer(data_dict, starting_date, ending_date)
         else:
-            raise Exception('Get Bath Weather: There is no sufficient matching data!')
+            raise Exception('Get Batch Weather: There is no sufficient matching data!')
     else:
         keys = [key_temperature, key_rainfall, key_humidity]
         for data in items:
@@ -194,10 +196,10 @@ def get_batch_trading_data(product, region, starting_date, ending_date):
         if elapsed_days < __month_time_delta:
             # Try to get month average
             ending_date = parse_string_to_date(ending_date)
-            starting_date =  ending_date - __month_time_delta
-            return get_batch_trading_data(product, region, starting_date, ending_date)
+            data_dict =  get_batch_trading_data(product, region, ending_date - __month_time_delta, ending_date)
+            return use_average_as_answer(data_dict, starting_date, ending_date)
         else:
-            raise Exception('Get Bath Trading Data: There is no sufficient matching data!')
+            raise Exception('Get Batch Trading Data: There is no sufficient matching data!')
     else:
         origin_data = []
         for data in items:
@@ -273,3 +275,12 @@ def fix_missing_data(oringin_datas, keys, starting_date, ending_date):
         context[key] = value_record[key]
     return context
 
+def use_average_as_answer(data_dict, starting_date, ending_date):
+    context = {}
+    starting_date = parse_string_to_date(starting_date)
+    ending_date = parse_string_to_date(ending_date)
+    delta_date = ending_date - starting_date
+    elapsed_days = delta_date.days + 1
+    for key in data_dict.keys():
+        context[key] = [mean(data_dict[key])] * elapsed_days
+    return context

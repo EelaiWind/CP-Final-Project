@@ -3,7 +3,10 @@
 from mydynamodb.utils import *
 import csv
 
-datas = retieve_training_data('WATERMELON','KAOHSIUNG', '2012-01-01', '2015-12-31')
+WEATHER_HOSTORY_SIZE = 5
+TRADING_DATA_HISTORY_SIZE = 5
+
+datas = retieve_training_data('WATERMELON','KAOHSIUNG', '2007-01-01', '2015-12-31',weather_history_size=WEATHER_HOSTORY_SIZE+1, trading_data_hostory_size=TRADING_DATA_HISTORY_SIZE)
 '''
 for dd in datas:
     for key, value in dd.items() :
@@ -13,8 +16,7 @@ for dd in datas:
             print(key,'\n',value)
     print('\n\n')
 '''
-WEATHER_HOSTORY_SIZE = 30
-TRADING_DATA_HISTORY_SIZE = 5
+
 fieldnames =[]
 for i in range(WEATHER_HOSTORY_SIZE):
     fieldnames.append('temperature_'+str(i))
@@ -31,7 +33,7 @@ for i in range(TRADING_DATA_HISTORY_SIZE):
 fieldnames += ['month', 'today_temperature', 'today_rainfall', 'today_humidity', 'today_price']
 print(len(fieldnames))
 
-with open('input.csv', 'w') as csvfile:
+with open('input_2007_w5.csv', 'w') as csvfile:
     writer = csv.writer(csvfile)
 
     writer.writerow(fieldnames)

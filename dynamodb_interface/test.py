@@ -3,11 +3,7 @@
 from mydynamodb.utils import *
 import csv
 
-add_product_price_item('PONKAN', '2016-06-03', 'TAICHUNG', 666, 555)
-'''
-x = retieve_training_data('PONKAN', 'KAOHSIUNG','2016-05-04','2016-06-03')
+datas = retieve_training_data('WATERMELON','KAOHSIUNG', '2007-01-23', '2007-02-22')[0]['price']
 
-for d in x:
-    for k,v in d.items():
-        print(k,'\n',v)
-'''
+print(len(datas))
+print(datas)
